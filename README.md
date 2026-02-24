@@ -57,35 +57,16 @@ erDiagram
     COURSES ||--o{ NOTES : contains
 ```
 
-### **Agent Flow Diagram (Track 1)**
+### **Agent Flow (Conceptual)**
 
-```mermaid
-flowchart TD
-  U[User Request] --> I[Intent Parse + Constraints]
-  I --> P{Need codebase context?}
-  P -- No --> D[Draft Answer / Plan]
-  P -- Yes --> T[Tool Trigger]
-
-  subgraph Tools
-    S1[Search (code_search/grep)]
-    S2[Read Files (read_file)]
-    S3[Edit Files (apply_patch/write_to_file)]
-    S4[Run/Check Commands (run_command/command_status)]
-  end
-
-  T --> S1 --> S2 --> E[Evidence Collected]
-  E --> D
-
-  D --> C{Confidence high?}
-  C -- No --> SC[Self-correction loop:
-  narrow search, validate assumptions,
-  re-read sources]
-  SC --> T
-  C -- Yes --> O[Implement / Respond]
-
-  O --> V{User feedback / errors?}
-  V -- Yes --> SC
-  V -- No --> Done[Done]
+```text
+1. User submits a request.
+2. System parses intent and constraints.
+3. If more context is needed, it searches and reads code/files.
+4. Using the evidence, it drafts a plan or answer.
+5. If confidence is low, it loops: narrows the search and re-checks assumptions.
+6. When confidence is high, it implements changes or responds.
+7. If the user reports errors, it re-enters the self-correction loop.
 ```
 
 ### **API Flow Architecture**

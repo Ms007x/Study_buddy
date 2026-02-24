@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
     // ── Logout ───────────────────────────────────────────────────────────────────
     const logout = useCallback(async () => {
-        try { await authApi.logout(); } catch (_) { /* ignore */ }
+        try { await authApi.logout(); } catch { /* ignore */ }
         saveToken(null);
         setUser(null);
     }, [saveToken]);

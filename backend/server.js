@@ -452,7 +452,7 @@ app.post('/courses/:courseId/notes/:id/summarize', authenticateToken, async (req
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   sendError(res, 'Internal server error', 500);
 });

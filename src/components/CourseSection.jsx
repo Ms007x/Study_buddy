@@ -63,25 +63,6 @@ const CourseCard = ({ course, onDelete, onGoToCourse, onGoToEditCourse, currentU
 const CourseSection = ({ courses = [], setCourses, onGoToCourse, onGoToCreateCourse, onGoToEditCourse, isAuthenticated, onLoginRequired }) => {
     const { user } = useAuth();
 
-    const handleUpdateCourse = async (updatedCourse) => {
-        try {
-            // Call API to update course
-            const response = await coursesApi.update(updatedCourse.id, {
-                title: updatedCourse.title,
-                description: updatedCourse.description
-            });
-            
-            // Update local state with response from API
-            if (setCourses) {
-                setCourses(courses.map(c => c.id === updatedCourse.id ? response : c));
-            }
-        } catch (error) {
-            console.error('Failed to update course:', error);
-            alert('Failed to update course. Please try again.');
-            throw error; // Re-throw to let CourseCard handle it
-        }
-    };
-
     const handleDeleteCourse = async (id) => {
         if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
             return;

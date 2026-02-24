@@ -266,6 +266,14 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
 
     if (!course) return null;
 
+    // Normalize learning path from either frontend shape (learningPath)
+    // or backend shape (learning_path JSON parsed to array)
+    const normalizedLearningPath = Array.isArray(course.learningPath)
+        ? course.learningPath
+        : Array.isArray(course.learning_path)
+            ? course.learning_path
+            : [];
+
     return (
         <div className="course-details-wrapper">
 
@@ -305,8 +313,8 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
                     <div className="course-timeline-section">
                         <h3 className="section-heading">Study Plan</h3>
                         <div className="timeline-container">
-                            {course.learningPath && course.learningPath.length > 0 ? (
-                                course.learningPath.map((item, index) => (
+                            {normalizedLearningPath.length > 0 ? (
+                                normalizedLearningPath.map((item, index) => (
                                     <div key={item.id || index} className={`timeline-item ${index === 0 ? 'active' : 'pending'}`}>
                                         <div className="timeline-dot">{index === 0 ? <Clock size={14} /> : <BookOpen size={14} />}</div>
                                         <div className="timeline-content"><h4>{item.day}</h4><p>{item.topic}</p></div>

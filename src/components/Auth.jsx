@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { auth as authApi } from '../services/api';
 import './Auth.css';
 
 const Auth = ({ initialMode = 'login', onBack, onLoginSuccess }) => {

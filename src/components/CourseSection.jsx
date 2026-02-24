@@ -1,43 +1,13 @@
 import { useState } from 'react';
 import { MoreVertical, FileText, Clock, ChevronRight, Edit2, Trash2, Plus, Save, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { courses as coursesApi } from '../services/api';
 import './CourseSection.css';
 
-const CourseCard = ({ course, onUpdate, onDelete, onGoToCourse }) => {
+const CourseCard = ({ course, onDelete, onGoToCourse, onGoToEditCourse, currentUserId }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editTitle, setEditTitle] = useState(course.title);
-    const [editDesc, setEditDesc] = useState(course.description);
 
-    const handleSave = () => {
-        onUpdate({ ...course, title: editTitle, description: editDesc });
-        setIsEditing(false);
-    };
-
-    if (isEditing) {
-        return (
-            <div className={`standalone-course-card ${course.colorClass}`}>
-                <div className="course-card-bg-glow"></div>
-                <div className="course-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    <input
-                        value={editTitle}
-                        onChange={e => setEditTitle(e.target.value)}
-                        className="study-input"
-                        style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.1)', fontSize: '1.1rem', fontWeight: 'bold' }}
-                    />
-                    <textarea
-                        value={editDesc}
-                        onChange={e => setEditDesc(e.target.value)}
-                        className="study-input"
-                        style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.1)', flexGrow: 1, resize: 'none' }}
-                    />
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
-                        <button onClick={handleSave} style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', background: 'var(--accent-blue)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem' }}><Save size={14} /> Save</button>
-                        <button onClick={() => setIsEditing(false)} style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', background: '#ffe4e6', color: '#e11d48', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem' }}><X size={14} /> Cancel</button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const isOwner = course.owner_id === currentUserId;
 
     return (
         <div className={`standalone-course-card ${course.colorClass}`}>
@@ -49,21 +19,23 @@ const CourseCard = ({ course, onUpdate, onDelete, onGoToCourse }) => {
                         <span className="course-icon-initial">{course.title.charAt(0)}</span>
                     </div>
 
-                    <div style={{ position: 'relative' }}>
-                        <button className="context-menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                            <MoreVertical size={18} />
-                        </button>
-                        {isMenuOpen && (
-                            <div style={{ position: 'absolute', right: 0, top: '100%', background: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, overflow: 'hidden', minWidth: '120px' }}>
-                                <button onClick={() => { setIsEditing(true); setIsMenuOpen(false); }} style={{ width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-dark-navy)' }}>
-                                    <Edit2 size={14} /> Edit
-                                </button>
-                                <button onClick={() => { onDelete(course.id); setIsMenuOpen(false); }} style={{ width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.9rem', color: '#e11d48', borderTop: '1px solid #f1f5f9' }}>
-                                    <Trash2 size={14} /> Delete
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {isOwner && (
+                        <div style={{ position: 'relative' }}>
+                            <button className="context-menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                <MoreVertical size={18} />
+                            </button>
+                            {isMenuOpen && (
+                                <div style={{ position: 'absolute', right: 0, top: '100%', background: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, overflow: 'hidden', minWidth: '120px' }}>
+                                    <button onClick={() => { onGoToEditCourse(course); setIsMenuOpen(false); }} style={{ width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-dark-navy)' }}>
+                                        <Edit2 size={14} /> Edit
+                                    </button>
+                                    <button onClick={() => { onDelete(course.id); setIsMenuOpen(false); }} style={{ width: '100%', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.9rem', color: '#e11d48', borderTop: '1px solid #f1f5f9' }}>
+                                        <Trash2 size={14} /> Delete
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="course-card-title">{course.title}</h3>
@@ -72,11 +44,11 @@ const CourseCard = ({ course, onUpdate, onDelete, onGoToCourse }) => {
                 <div className="course-card-meta">
                     <div className="meta-pill">
                         <FileText size={12} />
-                        <span>{course.notes?.length || 0} Notes</span>
+                        {course.notesCount || 0} notes
                     </div>
                     <div className="meta-pill">
                         <Clock size={12} />
-                        <span>{course.timeAgo}</span>
+                        {course.timeAgo}
                     </div>
                 </div>
 
@@ -88,26 +60,64 @@ const CourseCard = ({ course, onUpdate, onDelete, onGoToCourse }) => {
     );
 };
 
-const CourseSection = ({ courses = [], setCourses, onGoToCourse, onGoToCreateCourse }) => {
-    const handleUpdateCourse = (updatedCourse) => {
-        if (setCourses) {
-            setCourses(courses.map(c => c.id === updatedCourse.id ? updatedCourse : c));
+const CourseSection = ({ courses = [], setCourses, onGoToCourse, onGoToCreateCourse, onGoToEditCourse, isAuthenticated, onLoginRequired }) => {
+    const { user } = useAuth();
+
+    const handleUpdateCourse = async (updatedCourse) => {
+        try {
+            // Call API to update course
+            const response = await coursesApi.update(updatedCourse.id, {
+                title: updatedCourse.title,
+                description: updatedCourse.description
+            });
+            
+            // Update local state with response from API
+            if (setCourses) {
+                setCourses(courses.map(c => c.id === updatedCourse.id ? response : c));
+            }
+        } catch (error) {
+            console.error('Failed to update course:', error);
+            alert('Failed to update course. Please try again.');
+            throw error; // Re-throw to let CourseCard handle it
         }
     };
 
-    const handleDeleteCourse = (id) => {
-        if (setCourses) {
-            setCourses(courses.filter(c => c.id !== id));
+    const handleDeleteCourse = async (id) => {
+        if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            // Call API to delete course
+            await coursesApi.remove(id);
+            
+            // Remove from local state
+            if (setCourses) {
+                setCourses(courses.filter(c => c.id !== id));
+            }
+        } catch (error) {
+            console.error('Failed to delete course:', error);
+            alert('Failed to delete course. Please try again.');
+        }
+    };
+
+    const handleAddCourseClick = () => {
+        if (isAuthenticated) {
+            onGoToCreateCourse();
+        } else {
+            onLoginRequired();
         }
     };
 
     return (
         <section id="courses" className="course-section-container">
             <div className="course-section-header">
-                <h2 className="section-title">Your Learning Journeys</h2>
-                <button className="view-all-btn" onClick={onGoToCreateCourse} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--accent-blue)', color: 'white' }}>
-                    <Plus size={16} /> Add Course
-                </button>
+                <h2 className="section-title">Courses</h2>
+                {isAuthenticated && (
+                    <button className="view-all-btn" onClick={handleAddCourseClick} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--accent-blue)', color: 'white' }}>
+                        <Plus size={16} /> Add Course
+                    </button>
+                )}
             </div>
 
             <div className="course-cards-grid">
@@ -115,9 +125,10 @@ const CourseSection = ({ courses = [], setCourses, onGoToCourse, onGoToCreateCou
                     <CourseCard
                         key={course.id}
                         course={course}
-                        onUpdate={handleUpdateCourse}
                         onDelete={handleDeleteCourse}
                         onGoToCourse={onGoToCourse}
+                        onGoToEditCourse={onGoToEditCourse}
+                        currentUserId={user?.id}
                     />
                 ))}
             </div>

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ArrowLeft, FileText, ChevronRight, ChevronDown, Clock, Plus, BookOpen, PenTool, CheckCircle2, Sparkles, Mic, Save, X, Edit2, Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './CourseDetails.css';
 
 // initialNotes are now stored inside initialCourses in App.jsx
 // The initialNotes array has been removed as per instruction.
 
 const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
+    const { isAuthenticated, user } = useAuth();
     const notes = course?.notes || [];
     const [expandedNote, setExpandedNote] = useState(null);
     const [isAddingNote, setIsAddingNote] = useState(false);
@@ -25,6 +27,12 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
     };
 
     const handleSummarizeNote = (noteId, content) => {
+        // Check if user is authenticated
+        if (!isAuthenticated) {
+            alert('Please sign in to use AI summarization features');
+            return;
+        }
+
         // Toggle summary off if it already exists
         if (summarizedNotes[noteId] && !summarizedNotes[noteId].loading) {
             const newSummarized = { ...summarizedNotes };
@@ -50,6 +58,12 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
     };
 
     const handleSaveNote = () => {
+        // Check if user is authenticated
+        if (!isAuthenticated) {
+            alert('Please sign in to add notes');
+            return;
+        }
+
         if (!newNoteTitle.trim() || !newNoteContent.trim()) return;
 
         const newNote = {
@@ -148,6 +162,7 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
                     <div className="course-timeline-section">
                         <h3 className="section-heading">Study Plan</h3>
                         <div className="timeline-container">
+                            {console.log('CourseDetails - course.learningPath:', course.learningPath)}
                             {course.learningPath && course.learningPath.length > 0 ? (
                                 course.learningPath.map((item, index) => (
                                     <div key={item.id || index} className={`timeline-item ${index === 0 ? 'active' : 'pending'}`}>
@@ -199,7 +214,16 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
                     <div className="course-notes-section">
                         <div className="notes-header-row">
                             <h3 className="section-heading">Recent Notes</h3>
-                            <button className="add-note-btn" onClick={() => setIsAddingNote(!isAddingNote)}>
+                            <button 
+                                className="add-note-btn" 
+                                onClick={() => {
+                                    if (!isAuthenticated) {
+                                        alert('Please sign in to add notes');
+                                        return;
+                                    }
+                                    setIsAddingNote(!isAddingNote);
+                                }}
+                            >
                                 {isAddingNote ? <><X size={16} /> Cancel</> : <><Plus size={16} /> New Note</>}
                             </button>
                         </div>
@@ -341,11 +365,25 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
                             <div className="input-container">
                                 <textarea
                                     className="study-input"
-                                    placeholder="Type your question here..."
+                                    placeholder={isAuthenticated ? "Type your question here..." : "Please sign in to use AI features"}
                                     rows={4}
+                                    disabled={!isAuthenticated}
                                 ></textarea>
-                                <button className="mic-btn">
-                                    <Mic size={16} />
+                            </div>
+
+                            <div className="ai-action-buttons">
+                                <button 
+                                    className="btn-generate"
+                                    onClick={() => {
+                                        if (!isAuthenticated) {
+                                            alert('Please sign in to use AI features');
+                                            return;
+                                        }
+                                        // Handle AI generation
+                                    }}
+                                >
+                                    <Sparkles size={16} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                                    Generate with AI
                                 </button>
                             </div>
 

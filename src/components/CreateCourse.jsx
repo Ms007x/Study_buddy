@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { ArrowLeft, Upload, Plus, FileText, CheckCircle2, ChevronRight, BookOpen, Clock } from 'lucide-react';
 import './CreateCourse.css';
 
-const CreateCourse = ({ onBack, onCreate }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [theme, setTheme] = useState('theme-blue');
+const CreateCourse = ({ onBack, onCreate, editMode = false, initialData = null }) => {
+    const [title, setTitle] = useState(initialData?.title || '');
+    const [description, setDescription] = useState(initialData?.description || '');
+    const [theme, setTheme] = useState(initialData?.colorClass || 'theme-blue');
 
     // Dynamic Learning Path
-    const [learningPath, setLearningPath] = useState([
-        { id: 1, day: 'Day 1', topic: '' }
-    ]);
+    const [learningPath, setLearningPath] = useState(
+        initialData?.learningPath?.length > 0 
+            ? initialData.learningPath 
+            : [{ id: 1, day: 'Day 1', topic: '' }]
+    );
 
     // Notes Upload Mock
     const [notes, setNotes] = useState([]);
@@ -69,14 +71,14 @@ const CreateCourse = ({ onBack, onCreate }) => {
                 <div className="breadcrumbs">
                     <span>Courses</span>
                     <ChevronRight size={14} className="separator" />
-                    <span className="current">Create New Course</span>
+                    <span className="current">{editMode ? 'Edit Course' : 'Create New Course'}</span>
                 </div>
             </div>
 
             <div className="create-course-container">
                 <div className="create-header">
-                    <h1 className="create-title">Create a Learning Journey</h1>
-                    <p className="create-subtitle">Define your goals, structure your daily path, and upload your raw course materials.</p>
+                    <h1 className="create-title">{editMode ? 'Edit Your Course' : 'Create a Learning Journey'}</h1>
+                    <p className="create-subtitle">{editMode ? 'Update your course details and study plan.' : 'Define your goals, structure your daily path, and upload your raw course materials.'}</p>
                 </div>
 
                 <div className="create-grid">
@@ -185,7 +187,7 @@ const CreateCourse = ({ onBack, onCreate }) => {
                 <div className="create-footer">
                     <button className="cancel-course-btn" onClick={onBack}>Cancel</button>
                     <button className="save-course-btn" onClick={handleCreate} disabled={!title.trim() || !description.trim()}>
-                        Create Course
+                        {editMode ? 'Update Course' : 'Create Course'}
                     </button>
                 </div>
             </div>

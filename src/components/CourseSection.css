@@ -209,3 +209,87 @@
     color: white;
     border-color: var(--text-dark-navy);
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .course-section {
+        padding: 2rem 1rem;
+    }
+    
+    .section-header {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .course-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .standalone-course-card {
+        padding: 1.5rem;
+    }
+    
+    .course-card-title {
+        font-size: 1.25rem;
+    }
+    
+    .course-card-desc {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .course-section {
+        padding: 1.5rem 0.75rem;
+    }
+    
+    .section-header {
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .section-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .add-course-btn {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .standalone-course-card {
+        padding: 1rem;
+    }
+    
+    .course-icon-container {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .course-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .course-card-desc {
+        font-size: 0.85rem;
+    }
+    
+    .meta-pill {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .enter-course-btn {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}

@@ -10,6 +10,20 @@
     border-radius: 0;
 }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-main-container {
+        min-height: 100vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-main-container {
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+}
+
 /* Subtle glowing accent mesh in the background matching screenshot */
 .app-main-container::before {
     content: '';

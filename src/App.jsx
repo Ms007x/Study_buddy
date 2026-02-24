@@ -1,156 +1,249 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import TopNav from './components/TopNav';
 import Hero from './components/Hero';
 import CourseSection from './components/CourseSection';
 import CourseDetails from './components/CourseDetails';
 import CreateCourse from './components/CreateCourse';
+import Profile from './components/Profile';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import { courses as coursesApi } from './services/api';
 import './App.css';
 
-const initialCourses = [
-  {
-    id: 1,
-    title: "Operating Systems",
-    description: "Memory management, concurrency, and file systems.",
-    timeAgo: "Updated 2h ago",
-    colorClass: "theme-blue",
-    notes: [
-      {
-        id: 1,
-        title: "Lecture 4: Architecture Overview",
-        meta: "Created 2 days ago • 1.2k words",
-        content: "The fundamental architecture consists of a client layer, a business logic layer, and a data access layer. Communication between the layers happens via RESTful APIs and asynchronous message queues to ensure high availability."
-      },
-      {
-        id: 2,
-        title: "Chapter 2 Reading Summary",
-        meta: "Created 4 days ago • 800 words",
-        content: "Chapter 2 covers the basics of memory management, outlining paging and segmentation strategies. It also highlights the trade-offs between internal and external fragmentation."
-      },
-      {
-        id: 3,
-        title: "Midterm Study Guide Draft",
-        meta: "Created 1 week ago • 2.5k words",
-        content: "Topics to cover: 1. Process scheduling algorithms (RR, SJF, FCFS). 2. Deadlock avoidance (Banker's Algorithm). 3. Virtual memory implementation details."
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "Database Management",
-    description: "SQL, relational algebra, and normalization.",
-    timeAgo: "Updated 1d ago",
-    colorClass: "theme-purple",
-    notes: []
-  },
-  {
-    id: 3,
-    title: "UI/UX Design",
-    description: "Principles of effective human-computer interaction.",
-    timeAgo: "Updated 3d ago",
-    colorClass: "theme-magenta",
-    notes: []
-  },
-  {
-    id: 4,
-    title: "Algorithms",
-    description: "Graph algorithms, dynamic programming, and sorting.",
-    timeAgo: "Updated 5d ago",
-    colorClass: "theme-teal",
-    notes: []
-  }
-];
+// ─── Inner app that has access to AuthContext ─────────────────────────────────
+function AppInner() {
+  const { isAuthenticated, loading: authLoading, handleOAuthSuccess, logout } = useAuth();
 
-function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'course' | 'login' | 'signup' | 'create-course'
-  const [courses, setCourses] = useState(initialCourses);
+  const [currentView, setCurrentView] = useState('dashboard');
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
 
-  const handleGoToCourse = (course) => {
-    setSelectedCourse(course);
-    setCurrentView('course');
+  // ── Handle OAuth redirect callback (/auth/success?token=...&user=...) ─────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const userRaw = params.get('user');
+    if (token && userRaw) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userRaw));
+        handleOAuthSuccess(token, user);
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setCurrentView('dashboard');
+      } catch (_) { /* ignore parse errors */ }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Load courses from API (available to all users) ────────────────────────
+  const fetchCourses = useCallback(async () => {
+    setCoursesLoading(true);
+    try {
+      const data = await coursesApi.list();
+      // Normalize backend shape to the colorClass + notes format the UI uses
+      const normalized = (Array.isArray(data) ? data : []).map(c => ({
+        ...c,
+        colorClass: c.color || 'theme-blue',
+        notes: [],         // notes are loaded lazily inside CourseDetails
+        notesCount: c.note_count || 0,
+        learningPath: c.learning_path || [],
+        timeAgo: c.updated_at
+          ? `Updated ${timeAgoLabel(c.updated_at)}`
+          : 'Recently updated',
+      }));
+      setCourses(normalized);
+    } catch (err) {
+      console.error('Failed to load courses:', err.message);
+    } finally {
+      setCoursesLoading(false);
+    }
+  }, []); // Removed isAuthenticated dependency
+
+  useEffect(() => { fetchCourses(); }, [fetchCourses]);
+
+  // ── Routing helpers ───────────────────────────────────────────────────────────
+  const handleGoToCourse = (course) => { 
+    // Find the fresh course data from the courses array to ensure we have learningPath
+    const freshCourse = courses.find(c => c.id === course.id);
+    setSelectedCourse(freshCourse || course); 
+    setCurrentView('course'); 
+  };
+  const handleBackToDash = () => { setSelectedCourse(null); setCurrentView('dashboard'); };
+  const handleGoToLogin = () => setCurrentView('login');
+  const handleGoToSignup = () => setCurrentView('signup');
+  const handleGoToProfile = () => setCurrentView('profile');
+  const handleGoToEditCourse = (course) => { 
+    // Find the fresh course data from the courses array to ensure we have learningPath
+    const freshCourse = courses.find(c => c.id === course.id);
+    setSelectedCourse(freshCourse || course); 
+    setCurrentView('edit-course'); 
+  };
+  const handleGoToCreate = () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to create courses');
+      setCurrentView('login');
+    } else {
+      setCurrentView('create-course');
+    }
+  };
+  const handleLoginSuccess = () => { setCurrentView('dashboard'); fetchCourses(); };
+
+  const handleCreateCourse = async (courseData) => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      alert('Please sign in to create courses');
+      setCurrentView('login');
+      return;
+    }
+
+    try {
+      // Create course in database via API
+      const newCourse = await coursesApi.create({
+        title: courseData.title,
+        description: courseData.description,
+        emoji: courseData.emoji || null,
+        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' : 
+               courseData.colorClass === 'theme-green' ? '#10B981' :
+               courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
+               courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
+        learningPath: courseData.learningPath || []
+      });
+      
+      // Add to local state with proper formatting
+      const formattedCourse = {
+        ...newCourse,
+        colorClass: newCourse.color || courseData.colorClass,
+        notes: [],
+        notesCount: 0,
+        timeAgo: "Just now",
+        learningPath: newCourse.learning_path || courseData.learningPath || []
+      };
+      
+      setCourses(prev => [formattedCourse, ...prev]);
+      setCurrentView('dashboard');
+    } catch (error) {
+      console.error('Failed to create course:', error);
+      alert(`Failed to create course: ${error.message || 'Unknown error'}`);
+    }
   };
 
-  const handleBackToDashboard = () => {
-    setSelectedCourse(null);
+  const handleLogout = async () => {
+    await logout();
+    // Don't clear courses - they should be visible to everyone
+    // Just refetch to ensure public courses are still visible
+    fetchCourses();
     setCurrentView('dashboard');
   };
 
-  const handleGoToLogin = () => {
-    setCurrentView('login');
+  const handleUpdateCourse = async (courseData) => {
+    try {
+      // Update course in database via API
+      const updatedCourse = await coursesApi.update(selectedCourse.id, {
+        title: courseData.title,
+        description: courseData.description,
+        emoji: courseData.emoji || null,
+        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' : 
+               courseData.colorClass === 'theme-green' ? '#10B981' :
+               courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
+               courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
+        learningPath: courseData.learningPath || []
+      });
+      
+      // Update local state
+      setCourses(prev => prev.map(c => c.id === selectedCourse.id ? updatedCourse : c));
+      setSelectedCourse(updatedCourse);
+      setCurrentView('dashboard');
+    } catch (error) {
+      console.error('Failed to update course:', error);
+      alert(`Failed to update course: ${error.message || 'Unknown error'}`);
+    }
   };
 
-  const handleGoToSignup = () => {
-    setCurrentView('signup');
-  };
-
-  const handleGoToCreateCourse = () => {
-    setCurrentView('create-course');
-  };
-
-  const handleCreateCourse = (newCourse) => {
-    setCourses([newCourse, ...courses]);
-    setCurrentView('dashboard');
-  };
-
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentView('dashboard');
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentView('dashboard');
-  };
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <span style={{ fontSize: '1.1rem', color: 'var(--text-blue-gray)' }}>Loading…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="app-main-container">
       <TopNav
         isAuthenticated={isAuthenticated}
         onLogout={handleLogout}
-        onHome={handleBackToDashboard}
+        onHome={handleBackToDash}
         onLogin={handleGoToLogin}
         onSignup={handleGoToSignup}
+        onProfile={handleGoToProfile}
       />
       <main className="app-content-wrapper">
         {currentView === 'dashboard' ? (
           <>
-            <Hero />
+            <Hero onGetStarted={handleGoToSignup} />
             <CourseSection
               courses={courses}
               setCourses={setCourses}
+              loading={coursesLoading}
               onGoToCourse={handleGoToCourse}
-              onGoToCreateCourse={handleGoToCreateCourse}
+              onGoToCreateCourse={handleGoToCreate}
+              onGoToEditCourse={handleGoToEditCourse}
+              isAuthenticated={isAuthenticated}
+              onLoginRequired={handleGoToLogin}
             />
             <ContactSection />
           </>
         ) : currentView === 'create-course' ? (
-          <CreateCourse
-            onBack={handleBackToDashboard}
-            onCreate={handleCreateCourse}
+          <CreateCourse onBack={handleBackToDash} onCreate={handleCreateCourse} />
+        ) : currentView === 'edit-course' ? (
+          <CreateCourse 
+            onBack={handleBackToDash} 
+            onCreate={handleUpdateCourse}
+            editMode={true}
+            initialData={selectedCourse}
           />
         ) : currentView === 'course' ? (
           <CourseDetails
             course={selectedCourse}
-            onBack={handleBackToDashboard}
-            onUpdateCourse={(updatedCourse) => {
-              setSelectedCourse(updatedCourse);
-              setCourses(courses.map(c => c.id === updatedCourse.id ? updatedCourse : c));
+            onBack={handleBackToDash}
+            onUpdateCourse={(updated) => {
+              setSelectedCourse(updated);
+              setCourses(prev => prev.map(c => c.id === updated.id ? updated : c));
             }}
           />
+        ) : currentView === 'profile' ? (
+          <Profile onBack={handleBackToDash} />
         ) : (
           <Auth
             initialMode={currentView === 'login' ? 'login' : 'signup'}
-            onBack={handleBackToDashboard}
+            onBack={handleBackToDash}
             onLoginSuccess={handleLoginSuccess}
           />
         )}
       </main>
       <Footer />
     </div>
+  );
+}
+
+// ─── Simple relative-time helper ──────────────────────────────────────────────
+function timeAgoLabel(isoDate) {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 60) return `${m || 1}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// ─── Root export — wraps everything in AuthProvider ───────────────────────────
+function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
   );
 }
 

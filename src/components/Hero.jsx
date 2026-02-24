@@ -1,6 +1,6 @@
 import './Hero.css';
 
-const Hero = () => {
+const Hero = ({ onGetStarted }) => {
     return (
         <section className="hero-section">
             <h1 className="hero-title">
@@ -14,8 +14,8 @@ const Hero = () => {
             </p>
 
             <div className="hero-cta-container">
-                <button className="btn-get-started">GET STARTED</button>
-                <span className="hero-trial-text">14-days free trial</span>
+                <button className="btn-get-started" onClick={onGetStarted}>GET STARTED</button>
+                {/* <span className="hero-trial-text">14-days free trial</span>/ */}
             </div>
         </section>
     );

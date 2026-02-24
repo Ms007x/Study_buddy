@@ -1,38 +1,26 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, FileText, ChevronRight, ChevronDown, Clock, Plus, BookOpen, PenTool, CheckCircle2, Sparkles, Mic, Save, X } from 'lucide-react';
+import { ArrowLeft, FileText, ChevronRight, ChevronDown, Clock, Plus, BookOpen, PenTool, CheckCircle2, Sparkles, Mic, Save, X, Edit2, Trash2 } from 'lucide-react';
 import './CourseDetails.css';
 
-const initialNotes = [
-    {
-        id: 1,
-        title: "Lecture 4: Architecture Overview",
-        meta: "Created 2 days ago • 1.2k words",
-        content: "The fundamental architecture consists of a client layer, a business logic layer, and a data access layer. Communication between the layers happens via RESTful APIs and asynchronous message queues to ensure high availability."
-    },
-    {
-        id: 2,
-        title: "Chapter 2 Reading Summary",
-        meta: "Created 4 days ago • 800 words",
-        content: "Chapter 2 covers the basics of memory management, outlining paging and segmentation strategies. It also highlights the trade-offs between internal and external fragmentation."
-    },
-    {
-        id: 3,
-        title: "Midterm Study Guide Draft",
-        meta: "Created 1 week ago • 2.5k words",
-        content: "Topics to cover: 1. Process scheduling algorithms (RR, SJF, FCFS). 2. Deadlock avoidance (Banker's Algorithm). 3. Virtual memory implementation details."
-    }
-];
+// initialNotes are now stored inside initialCourses in App.jsx
+// The initialNotes array has been removed as per instruction.
 
-const CourseDetails = ({ course, onBack }) => {
-    const [notes, setNotes] = useState(initialNotes);
+const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
+    const notes = course?.notes || [];
     const [expandedNote, setExpandedNote] = useState(null);
     const [isAddingNote, setIsAddingNote] = useState(false);
     const [newNoteTitle, setNewNoteTitle] = useState('');
     const [newNoteContent, setNewNoteContent] = useState('');
     const [summarizedNotes, setSummarizedNotes] = useState({});
 
+    // Edit state
+    const [editingNoteId, setEditingNoteId] = useState(null);
+    const [editNoteTitle, setEditNoteTitle] = useState('');
+    const [editNoteContent, setEditNoteContent] = useState('');
+
     const toggleNote = (id) => {
+        if (editingNoteId === id) return;
         setExpandedNote(expandedNote === id ? null : id);
     };
 
@@ -71,11 +59,39 @@ const CourseDetails = ({ course, onBack }) => {
             content: newNoteContent
         };
 
-        setNotes([newNote, ...notes]);
+        if (onUpdateCourse) {
+            onUpdateCourse({ ...course, notes: [newNote, ...notes] });
+        }
+
         setNewNoteTitle('');
         setNewNoteContent('');
         setIsAddingNote(false);
         setExpandedNote(newNote.id);
+    };
+
+    const startEditNote = (e, note) => {
+        e.stopPropagation();
+        setEditingNoteId(note.id);
+        setEditNoteTitle(note.title);
+        setEditNoteContent(note.content);
+        setExpandedNote(note.id);
+    };
+
+    const handleSaveEditNote = () => {
+        if (!editNoteTitle.trim() || !editNoteContent.trim()) return;
+        const updatedNotes = notes.map(n => n.id === editingNoteId ? { ...n, title: editNoteTitle, content: editNoteContent, meta: `Edited just now • ${editNoteContent.trim().split(/\s+/).length} words` } : n);
+        if (onUpdateCourse) onUpdateCourse({ ...course, notes: updatedNotes });
+        setEditingNoteId(null);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingNoteId(null);
+    };
+
+    const handleDeleteNote = (e, id) => {
+        e.stopPropagation();
+        const remainingNotes = notes.filter(n => n.id !== id);
+        if (onUpdateCourse) onUpdateCourse({ ...course, notes: remainingNotes });
     };
 
     if (!course) return null;
@@ -132,34 +148,50 @@ const CourseDetails = ({ course, onBack }) => {
                     <div className="course-timeline-section">
                         <h3 className="section-heading">Study Plan</h3>
                         <div className="timeline-container">
-                            <div className="timeline-item completed">
-                                <div className="timeline-dot"><CheckCircle2 size={14} /></div>
-                                <div className="timeline-content">
-                                    <h4>Day 1</h4>
-                                    <p>Read Chapters 1-2 & Complete Basics Quiz</p>
-                                </div>
-                            </div>
-                            <div className="timeline-item active">
-                                <div className="timeline-dot"><Clock size={14} /></div>
-                                <div className="timeline-content">
-                                    <h4>Day 2</h4>
-                                    <p>Review Memory Management Notes & Practice Problems</p>
-                                </div>
-                            </div>
-                            <div className="timeline-item pending">
-                                <div className="timeline-dot"><BookOpen size={14} /></div>
-                                <div className="timeline-content">
-                                    <h4>Day 3</h4>
-                                    <p>Start Advanced Topics & Prepare for Midterm</p>
-                                </div>
-                            </div>
-                            <div className="timeline-item pending">
-                                <div className="timeline-dot"><BookOpen size={14} /></div>
-                                <div className="timeline-content">
-                                    <h4>End of Course</h4>
-                                    <p>Final Exam & Project Submission</p>
-                                </div>
-                            </div>
+                            {course.learningPath && course.learningPath.length > 0 ? (
+                                course.learningPath.map((item, index) => (
+                                    <div key={item.id || index} className={`timeline-item ${index === 0 ? 'active' : 'pending'}`}>
+                                        <div className="timeline-dot">
+                                            {index === 0 ? <Clock size={14} /> : <BookOpen size={14} />}
+                                        </div>
+                                        <div className="timeline-content">
+                                            <h4>{item.day}</h4>
+                                            <p>{item.topic}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <>
+                                    <div className="timeline-item completed">
+                                        <div className="timeline-dot"><CheckCircle2 size={14} /></div>
+                                        <div className="timeline-content">
+                                            <h4>Day 1</h4>
+                                            <p>Read Chapters 1-2 & Complete Basics Quiz</p>
+                                        </div>
+                                    </div>
+                                    <div className="timeline-item active">
+                                        <div className="timeline-dot"><Clock size={14} /></div>
+                                        <div className="timeline-content">
+                                            <h4>Day 2</h4>
+                                            <p>Review Memory Management Notes & Practice Problems</p>
+                                        </div>
+                                    </div>
+                                    <div className="timeline-item pending">
+                                        <div className="timeline-dot"><BookOpen size={14} /></div>
+                                        <div className="timeline-content">
+                                            <h4>Day 3</h4>
+                                            <p>Start Advanced Topics & Prepare for Midterm</p>
+                                        </div>
+                                    </div>
+                                    <div className="timeline-item pending">
+                                        <div className="timeline-dot"><BookOpen size={14} /></div>
+                                        <div className="timeline-content">
+                                            <h4>End of Course</h4>
+                                            <p>Final Exam & Project Submission</p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -199,32 +231,81 @@ const CourseDetails = ({ course, onBack }) => {
 
                         <div className="notes-list">
                             {notes.map(note => (
-                                <div key={note.id} className={`note-list-container ${expandedNote === note.id ? 'expanded' : ''}`}>
+                                <div key={note.id} className={`note - list - container ${expandedNote === note.id ? 'expanded' : ''} `}>
                                     <div className="note-list-item" onClick={() => toggleNote(note.id)}>
                                         <div className="note-icon"><FileText size={18} /></div>
                                         <div className="note-info">
                                             <h4 className="note-title">{note.title}</h4>
                                             <p className="note-meta">{note.meta}</p>
                                         </div>
-                                        <button className={`arrow-btn ${expandedNote === note.id ? 'active' : ''}`}>
+                                        <button className={`arrow - btn ${expandedNote === note.id ? 'active' : ''} `}>
                                             {expandedNote === note.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                                         </button>
                                     </div>
 
                                     {expandedNote === note.id && (
                                         <div className="note-expanded-content">
-                                            <div className="note-body markdown-rendered-content">
-                                                <ReactMarkdown>{note.content}</ReactMarkdown>
-                                            </div>
-                                            <div className="note-actions">
-                                                <button
-                                                    className="btn-summarize-ai-small"
-                                                    onClick={() => handleSummarizeNote(note.id, note.content)}
-                                                >
-                                                    <Sparkles size={14} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'text-bottom' }} />
-                                                    {summarizedNotes[note.id] && !summarizedNotes[note.id].loading ? 'Hide Summary' : 'Summarize with AI'}
-                                                </button>
-                                            </div>
+                                            {editingNoteId === note.id ? (
+                                                <div className="add-note-form" style={{ marginTop: '1rem', marginBottom: 0 }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Note Title"
+                                                        value={editNoteTitle}
+                                                        onChange={(e) => setEditNoteTitle(e.target.value)}
+                                                        className="add-note-title"
+                                                    />
+                                                    <textarea
+                                                        placeholder="Write your note here..."
+                                                        value={editNoteContent}
+                                                        onChange={(e) => setEditNoteContent(e.target.value)}
+                                                        className="study-input add-note-content"
+                                                        rows={6}
+                                                    />
+                                                    <div className="add-note-actions" style={{ gap: '0.5rem' }}>
+                                                        <button className="btn-save-note" onClick={handleSaveEditNote}>
+                                                            <Save size={16} /> Save Changes
+                                                        </button>
+                                                        <button
+                                                            className="btn-save-note"
+                                                            style={{ background: '#ffe4e6', color: '#e11d48' }}
+                                                            onClick={handleCancelEdit}
+                                                        >
+                                                            <X size={16} /> Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="note-body markdown-rendered-content">
+                                                        <ReactMarkdown>{note.content}</ReactMarkdown>
+                                                    </div>
+                                                    <div className="note-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                            <button
+                                                                className="arrow-btn"
+                                                                style={{ padding: '0.4rem', border: '1px solid var(--border-light)' }}
+                                                                onClick={(e) => startEditNote(e, note)}
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button
+                                                                className="arrow-btn"
+                                                                style={{ padding: '0.4rem', border: '1px solid #ffe4e6', color: '#e11d48', background: '#fff1f2' }}
+                                                                onClick={(e) => handleDeleteNote(e, note.id)}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                        <button
+                                                            className="btn-summarize-ai-small"
+                                                            onClick={() => handleSummarizeNote(note.id, note.content)}
+                                                        >
+                                                            <Sparkles size={14} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                                                            {summarizedNotes[note.id] && !summarizedNotes[note.id].loading ? 'Hide Summary' : 'Summarize with AI'}
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
 
                                             {summarizedNotes[note.id] && (
                                                 <div className="ai-summary-block">

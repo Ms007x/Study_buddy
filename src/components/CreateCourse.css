@@ -1,0 +1,291 @@
+.create-course-wrapper {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.create-course-container {
+    background: white;
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border-light);
+    padding: 3rem;
+    margin-top: 1.5rem;
+}
+
+.create-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 2rem;
+}
+
+.create-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-dark-navy);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+}
+
+.create-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-blue-gray);
+}
+
+.create-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+}
+
+.create-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark-navy);
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-blue-gray);
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark-navy);
+}
+
+.theme-selector {
+    display: flex;
+    gap: 1rem;
+}
+
+.theme-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--text-blue-gray);
+}
+
+.theme-circle.theme-blue {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #3b82f6;
+}
+
+.theme-circle.theme-purple {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    border-color: #a855f7;
+}
+
+.theme-circle.theme-magenta {
+    background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+    border-color: #d946ef;
+}
+
+.theme-circle.theme-teal {
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    border-color: #14b8a6;
+}
+
+.theme-circle.selected {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-width: 3px;
+}
+
+.upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    border: 2px dashed rgba(59, 130, 246, 0.3);
+    border-radius: var(--radius-lg);
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-box:hover {
+    background: #eff6ff;
+    border-color: rgba(59, 130, 246, 0.6);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--text-dark-navy);
+    font-weight: 500;
+}
+
+.upload-hint {
+    font-size: 0.85rem;
+    color: var(--text-blue-gray);
+    font-weight: 400;
+}
+
+.uploaded-files-list {
+    margin-top: 1.5rem;
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+}
+
+.uploaded-file-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.uploaded-file-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Learning Path */
+.study-plan-section {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-light);
+}
+
+.learning-path-builder {
+    position: relative;
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.path-item {
+    position: relative;
+}
+
+.path-dot {
+    position: absolute;
+    left: -2.3rem;
+    /* Align with border-left of container */
+    top: 5px;
+    background: white;
+    border: 2px solid var(--accent-blue);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-blue);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.path-content-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.path-day-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.path-input {
+    padding: 0.75rem;
+    background: white;
+}
+
+.add-day-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--accent-blue);
+    background: transparent;
+    color: var(--accent-blue);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-day-btn:hover {
+    background: #eff6ff;
+}
+
+.create-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.cancel-course-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-blue-gray);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancel-course-btn:hover {
+    background: #f1f5f9;
+    color: var(--text-dark-navy);
+}
+
+.save-course-btn {
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-pill);
+    background: var(--btn-gradient);
+    border: none;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.save-course-btn:hover {
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.save-course-btn:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}

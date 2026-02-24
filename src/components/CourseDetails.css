@@ -518,7 +518,7 @@
 }
 
 .btn-summarize-ai-small {
-    background: var(--btn-gradient);
+    background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
     color: white;
     font-weight: 600;
     font-size: 0.85rem;
@@ -526,14 +526,16 @@
     border-radius: var(--radius-pill);
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     transition: all 0.2s;
     display: flex;
     align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .btn-summarize-ai-small:hover {
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
     transform: translateY(-2px);
 }
 
@@ -722,4 +724,121 @@
         grid-template-columns: 1fr;
         gap: 3rem;
     }
+}
+
+/* ── Note Editor Card ──────────────────────────────────────────────────────── */
+.note-editor-card {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    animation: fadeSlideUp 0.25s ease;
+}
+
+/* ── Write / Preview Tab Row ──────────────────────────────────────────────── */
+.editor-tab-row {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--pill-bg, #f1f5f9);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    width: fit-content;
+    margin: 0.75rem 0;
+}
+
+.editor-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-blue-gray);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.editor-tab-btn.active {
+    background: white;
+    color: var(--text-dark-navy);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.editor-tab-btn:hover:not(.active) {
+    color: var(--text-dark-navy);
+}
+
+/* ── Markdown Toolbar ─────────────────────────────────────────────────────── */
+.md-toolbar {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.4rem 0.5rem;
+    background: var(--pill-bg, #f8fafc);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.md-tool-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-blue-gray);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+}
+
+.md-tool-btn:hover {
+    background: white;
+    color: var(--text-dark-navy);
+    border-color: var(--border-light);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Preview Box ──────────────────────────────────────────────────────────── */
+.note-preview-box {
+    min-height: 180px;
+    padding: 1rem 1.25rem;
+    border: 1px dashed var(--border-light);
+    border-radius: var(--radius-lg);
+    background: #fafbfc;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+/* ── Add note actions — allow gap between buttons ─────────────────────────── */
+.add-note-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+}
+
+/* ── Note actions row — space-between layout ──────────────────────────────── */
+.note-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* ── Empty state hint ─────────────────────────────────────────────────────── */
+.notes-empty-hint {
+    font-size: 0.9rem;
+    color: var(--text-blue-gray);
+    padding: 1rem 0;
 }

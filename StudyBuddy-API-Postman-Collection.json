@@ -1,0 +1,424 @@
+{
+	"info": {
+		"_postman_id": "studybuddy-api-collection",
+		"name": "StudyBuddy API - Full Documentation",
+		"description": "Complete API documentation for StudyBuddy application including Courses, Notes, and AI Summaries endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "POST /auth/signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Test User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Create a new user account. Returns JWT token upon successful registration."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /auth/login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate user and return JWT token for API access."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auth/me",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get current user profile information. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /auth/logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout endpoint (client-side token removal)."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auth/providers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/providers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"providers"
+							]
+						},
+						"description": "Get available OAuth providers (currently empty)."
+					},
+					"response": []
+				}
+			],
+			"description": "User authentication and authorization endpoints"
+		},
+		{
+			"name": "Courses Management",
+			"item": [
+				{
+					"name": "GET /courses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses"
+							]
+						},
+						"description": "List all courses with note counts. Public endpoint - no authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /courses",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Advanced React Development\",\n  \"emoji\": \"⚛️\",\n  \"color\": \"theme-blue\",\n  \"description\": \"Master React with hooks, context, and modern patterns\",\n  \"learningPath\": [\n    {\"id\": 1, \"day\": \"Day 1\", \"topic\": \"React Hooks Deep Dive\"},\n    {\"id\": 2, \"day\": \"Day 2\", \"topic\": \"Context API & State Management\"},\n    {\"id\": 3, \"day\": \"Day 3\", \"topic\": \"Performance Optimization\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses"
+							]
+						},
+						"description": "Create a new course. Requires authentication. User becomes course owner."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /courses/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated React Course\",\n  \"description\": \"Updated description for React course\",\n  \"learningPath\": [\n    {\"id\": 1, \"day\": \"Day 1\", \"topic\": \"Updated React Hooks\"},\n    {\"id\": 2, \"day\": \"Day 2\", \"topic\": \"Updated State Management\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1"
+							]
+						},
+						"description": "Update existing course. Only course owner can modify. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /courses/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1"
+							]
+						},
+						"description": "Delete course and all associated notes. Only course owner can delete. Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for course management"
+		},
+		{
+			"name": "Notes Management",
+			"item": [
+				{
+					"name": "GET /courses/:courseId/notes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes"
+							]
+						},
+						"description": "List all notes in a specific course. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /courses/:courseId/notes/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes",
+								"1"
+							]
+						},
+						"description": "Get single note by ID. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /courses/:courseId/notes",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Understanding React Hooks\",\n  \"content\": \"React Hooks revolutionized how we write React components. They allow you to use state and other React features without writing a class. The most commonly used hooks are useState and useEffect. useState lets you add state to functional components, while useEffect lets you perform side effects. Other important hooks include useContext, useReducer, and useMemo. Each hook serves a specific purpose and follows specific rules of hooks.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes"
+							]
+						},
+						"description": "Create a new note in a course. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /courses/:courseId/notes/:id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated: Understanding React Hooks\",\n  \"content\": \"React Hooks revolutionized how we write React components. They allow you to use state and other React features without writing a class. Updated content with more details about useState and useEffect hooks.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes",
+								"1"
+							]
+						},
+						"description": "Update existing note. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /courses/:courseId/notes/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes",
+								"1"
+							]
+						},
+						"description": "Delete a note. Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for notes within courses"
+		},
+		{
+			"name": "AI Features",
+			"item": [
+				{
+					"name": "POST /courses/:courseId/notes/:id/summarize",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/1/notes/1/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"1",
+								"notes",
+								"1",
+								"summarize"
+							]
+						},
+						"description": "Generate AI-powered summary for a note. Requires authentication. Uses external AI service to create concise summary of note content."
+					},
+					"response": []
+				}
+			],
+			"description": "AI-powered features including note summarization"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

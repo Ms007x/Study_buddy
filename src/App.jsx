@@ -48,7 +48,7 @@ function AppInner() {
         colorClass: c.color || 'theme-blue',
         notes: [],         // notes are loaded lazily inside CourseDetails
         notesCount: c.note_count || 0,
-        learningPath: c.learning_path || [],
+        learningPath: Array.isArray(c.learning_path) ? c.learning_path : [],
         timeAgo: c.updated_at
           ? `Updated ${timeAgoLabel(c.updated_at)}`
           : 'Recently updated',
@@ -64,21 +64,21 @@ function AppInner() {
   useEffect(() => { fetchCourses(); }, [fetchCourses]);
 
   // ── Routing helpers ───────────────────────────────────────────────────────────
-  const handleGoToCourse = (course) => { 
+  const handleGoToCourse = (course) => {
     // Find the fresh course data from the courses array to ensure we have learningPath
     const freshCourse = courses.find(c => c.id === course.id);
-    setSelectedCourse(freshCourse || course); 
-    setCurrentView('course'); 
+    setSelectedCourse(freshCourse || course);
+    setCurrentView('course');
   };
   const handleBackToDash = () => { setSelectedCourse(null); setCurrentView('dashboard'); };
   const handleGoToLogin = () => setCurrentView('login');
   const handleGoToSignup = () => setCurrentView('signup');
   const handleGoToProfile = () => setCurrentView('profile');
-  const handleGoToEditCourse = (course) => { 
+  const handleGoToEditCourse = (course) => {
     // Find the fresh course data from the courses array to ensure we have learningPath
     const freshCourse = courses.find(c => c.id === course.id);
-    setSelectedCourse(freshCourse || course); 
-    setCurrentView('edit-course'); 
+    setSelectedCourse(freshCourse || course);
+    setCurrentView('edit-course');
   };
   const handleGoToCreate = () => {
     if (!isAuthenticated) {
@@ -104,13 +104,13 @@ function AppInner() {
         title: courseData.title,
         description: courseData.description,
         emoji: courseData.emoji || null,
-        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' : 
-               courseData.colorClass === 'theme-green' ? '#10B981' :
-               courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
-               courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
+        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' :
+          courseData.colorClass === 'theme-green' ? '#10B981' :
+            courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
+              courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
         learningPath: courseData.learningPath || []
       });
-      
+
       // Add to local state with proper formatting
       const formattedCourse = {
         ...newCourse,
@@ -120,7 +120,7 @@ function AppInner() {
         timeAgo: "Just now",
         learningPath: newCourse.learning_path || courseData.learningPath || []
       };
-      
+
       setCourses(prev => [formattedCourse, ...prev]);
       setCurrentView('dashboard');
     } catch (error) {
@@ -144,16 +144,25 @@ function AppInner() {
         title: courseData.title,
         description: courseData.description,
         emoji: courseData.emoji || null,
-        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' : 
-               courseData.colorClass === 'theme-green' ? '#10B981' :
-               courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
-               courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
+        color: courseData.colorClass === 'theme-blue' ? '#3B82F6' :
+          courseData.colorClass === 'theme-green' ? '#10B981' :
+            courseData.colorClass === 'theme-purple' ? '#8B5CF6' :
+              courseData.colorClass === 'theme-orange' ? '#F97316' : '#3B82F6',
         learningPath: courseData.learningPath || []
       });
-      
-      // Update local state
-      setCourses(prev => prev.map(c => c.id === selectedCourse.id ? updatedCourse : c));
-      setSelectedCourse(updatedCourse);
+
+      // Normalize the response from backend
+      const normalized = {
+        ...updatedCourse,
+        colorClass: updatedCourse.color || courseData.colorClass,
+        notes: courseData.notes || [],
+        notesCount: courseData.notesCount || 0,
+        learningPath: Array.isArray(updatedCourse.learning_path) ? updatedCourse.learning_path : (courseData.learningPath || []),
+        timeAgo: 'Updated just now',
+      };
+
+      setCourses(prev => prev.map(c => c.id === selectedCourse.id ? normalized : c));
+      setSelectedCourse(normalized);
       setCurrentView('dashboard');
     } catch (error) {
       console.error('Failed to update course:', error);
@@ -198,8 +207,8 @@ function AppInner() {
         ) : currentView === 'create-course' ? (
           <CreateCourse onBack={handleBackToDash} onCreate={handleCreateCourse} />
         ) : currentView === 'edit-course' ? (
-          <CreateCourse 
-            onBack={handleBackToDash} 
+          <CreateCourse
+            onBack={handleBackToDash}
             onCreate={handleUpdateCourse}
             editMode={true}
             initialData={selectedCourse}

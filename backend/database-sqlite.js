@@ -33,12 +33,16 @@ const initializeDatabase = () => {
       emoji TEXT,
       color TEXT,
       description TEXT,
+      learning_path TEXT,
       owner_id INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users (id)
     )
   `);
+
+  // Add learning_path column if it doesn't exist (migration for existing DBs)
+  db.run(`ALTER TABLE courses ADD COLUMN learning_path TEXT`, () => { });
 
   // Create notes table
   db.run(`
@@ -84,7 +88,7 @@ const get = (sql, params = []) => {
 
 const run = (sql, params = []) => {
   return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
+    db.run(sql, params, function (err) {
       if (err) {
         reject(err);
       } else {

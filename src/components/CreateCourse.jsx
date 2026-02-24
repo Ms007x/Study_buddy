@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Upload, Plus, FileText, CheckCircle2, ChevronRight, BookOpen, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, BookOpen, ChevronRight } from 'lucide-react';
 import './CreateCourse.css';
 
 const CreateCourse = ({ onBack, onCreate, editMode = false, initialData = null }) => {
@@ -9,31 +9,14 @@ const CreateCourse = ({ onBack, onCreate, editMode = false, initialData = null }
 
     // Dynamic Learning Path
     const [learningPath, setLearningPath] = useState(
-        initialData?.learningPath?.length > 0 
-            ? initialData.learningPath 
+        initialData?.learningPath?.length > 0
+            ? initialData.learningPath
             : [{ id: 1, day: 'Day 1', topic: '' }]
     );
 
-    // Notes Upload Mock
-    const [notes, setNotes] = useState([]);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleFileUpload = (e) => {
-        const files = e.target.files;
-        if (files && files.length > 0) {
-            setIsUploading(true);
-            setTimeout(() => {
-                const newNotes = Array.from(files).map((file, i) => ({
-                    id: Date.now() + i,
-                    title: file.name,
-                    meta: `Uploaded just now • File`,
-                    content: `## Extracted content from ${file.name}\n\nThis is a simulated AI extraction of the uploaded document. Your real content would appear here after processing.`
-                }));
-                setNotes(prev => [...prev, ...newNotes]);
-                setIsUploading(false);
-            }, 1200);
-        }
-    };
+    // Initial Notes Text
+    const [noteTitle, setNoteTitle] = useState('');
+    const [noteContent, setNoteContent] = useState('');
 
     const addDay = () => {
         setLearningPath(prev => [
@@ -49,13 +32,18 @@ const CreateCourse = ({ onBack, onCreate, editMode = false, initialData = null }
     const handleCreate = () => {
         if (!title.trim() || !description.trim()) return;
 
+        // Build initial notes array if user typed a note
+        const initialNotes = noteTitle.trim() && noteContent.trim()
+            ? [{ id: Date.now(), title: noteTitle.trim(), content: noteContent.trim() }]
+            : [];
+
         onCreate({
             id: Date.now(),
             title,
             description,
-            timeAgo: "Just now",
+            timeAgo: 'Just now',
             colorClass: theme,
-            notes,
+            notes: initialNotes,
             learningPath: learningPath.filter(lp => lp.topic.trim() !== '')
         });
     };
@@ -118,38 +106,31 @@ const CreateCourse = ({ onBack, onCreate, editMode = false, initialData = null }
                         </section>
 
                         <section className="create-section">
-                            <h2 className="section-title">Upload Materials (Notes/PDFs)</h2>
-                            <p className="section-subtitle">Upload your existing notes, we will parse them into markdown.</p>
+                            <h2 className="section-title">Add an Initial Note (Optional)</h2>
+                            <p className="section-subtitle">Write a starting note for this course — supports Markdown formatting.</p>
 
-                            <label className="upload-box">
-                                <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.doc,.docx,.txt" style={{ display: 'none' }} />
-                                {isUploading ? (
-                                    <div className="upload-content">
-                                        <div className="spining-sparkle" style={{ color: 'var(--accent-blue)' }}><Clock size={32} /></div>
-                                        <span>Parsing documents with AI...</span>
-                                    </div>
-                                ) : (
-                                    <div className="upload-content">
-                                        <Upload size={32} color="var(--accent-blue)" />
-                                        <span>Click to browse files or drag and drop</span>
-                                        <span className="upload-hint">Supports PDF, DOCX, TXT</span>
-                                    </div>
-                                )}
-                            </label>
-
-                            {notes.length > 0 && (
-                                <div className="uploaded-files-list">
-                                    <h4 style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'var(--text-blue-gray)' }}>Uploaded Notes</h4>
-                                    {notes.map(note => (
-                                        <div key={note.id} className="uploaded-file-item">
-                                            <FileText size={16} color="var(--accent-blue)" />
-                                            <span style={{ flex: 1, fontSize: '0.9rem', fontWeight: 500 }}>{note.title}</span>
-                                            <CheckCircle2 size={16} color="var(--theme-success, #10b981)" />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            <div className="form-group">
+                                <label>Note Title</label>
+                                <input
+                                    type="text"
+                                    className="study-input"
+                                    placeholder="e.g. Introduction & Overview"
+                                    value={noteTitle}
+                                    onChange={e => setNoteTitle(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Note Content <span style={{ fontWeight: 400, color: 'var(--text-blue-gray)' }}>(Markdown supported)</span></label>
+                                <textarea
+                                    className="study-input"
+                                    rows="8"
+                                    placeholder={`# My First Note\n\nWrite your notes here. You can use **bold**, *italic*, ## headings, and more.`}
+                                    value={noteContent}
+                                    onChange={e => setNoteContent(e.target.value)}
+                                />
+                            </div>
                         </section>
+
                     </div>
 
                     {/* Right Column: Study Plan */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Lock, User, Github } from 'lucide-react';
 import './Auth.css';
 
-const Auth = ({ initialMode = 'login', onBack }) => {
+const Auth = ({ initialMode = 'login', onBack, onLoginSuccess }) => {
     const [mode, setMode] = useState(initialMode);
 
     // Sync external mode changes if they occur
@@ -35,7 +35,10 @@ const Auth = ({ initialMode = 'login', onBack }) => {
                         </p>
                     </div>
 
-                    <form className="auth-form" onSubmit={(e) => { e.preventDefault(); onBack(); }}>
+                    <form className="auth-form" onSubmit={(e) => {
+                        e.preventDefault();
+                        if (onLoginSuccess) onLoginSuccess();
+                    }}>
 
                         {mode === 'signup' && (
                             <div className="input-group">

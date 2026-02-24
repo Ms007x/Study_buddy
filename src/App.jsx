@@ -4,6 +4,8 @@ import Hero from './components/Hero';
 import CourseSection from './components/CourseSection';
 import CourseDetails from './components/CourseDetails';
 import CreateCourse from './components/CreateCourse';
+import ContactSection from './components/ContactSection';
+import Footer from './components/Footer';
 import Auth from './components/Auth';
 import './App.css';
 
@@ -62,9 +64,10 @@ const initialCourses = [
 ];
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'course' | 'login' | 'signup'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'course' | 'login' | 'signup' | 'create-course'
   const [courses, setCourses] = useState(initialCourses);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleGoToCourse = (course) => {
     setSelectedCourse(course);
@@ -93,9 +96,21 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setCurrentView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentView('dashboard');
+  };
+
   return (
     <div className="app-main-container">
       <TopNav
+        isAuthenticated={isAuthenticated}
+        onLogout={handleLogout}
         onHome={handleBackToDashboard}
         onLogin={handleGoToLogin}
         onSignup={handleGoToSignup}
@@ -110,6 +125,7 @@ function App() {
               onGoToCourse={handleGoToCourse}
               onGoToCreateCourse={handleGoToCreateCourse}
             />
+            <ContactSection />
           </>
         ) : currentView === 'create-course' ? (
           <CreateCourse
@@ -129,9 +145,11 @@ function App() {
           <Auth
             initialMode={currentView === 'login' ? 'login' : 'signup'}
             onBack={handleBackToDashboard}
+            onLoginSuccess={handleLoginSuccess}
           />
         )}
       </main>
+      <Footer />
     </div>
   );
 }

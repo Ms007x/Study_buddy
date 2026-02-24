@@ -102,7 +102,7 @@ const CourseSection = ({ courses = [], setCourses, onGoToCourse, onGoToCreateCou
     };
 
     return (
-        <section className="course-section-container">
+        <section id="courses" className="course-section-container">
             <div className="course-section-header">
                 <h2 className="section-title">Your Learning Journeys</h2>
                 <button className="view-all-btn" onClick={onGoToCreateCourse} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--accent-blue)', color: 'white' }}>

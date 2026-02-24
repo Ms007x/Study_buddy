@@ -64,12 +64,6 @@ export function AuthProvider({ children }) {
         setUser(null);
     }, [saveToken]);
 
-    // ── OAuth success callback (called from App when redirected back) ─────────────
-    const handleOAuthSuccess = useCallback((jwt, userObj) => {
-        saveToken(jwt);
-        setUser(userObj);
-    }, [saveToken]);
-
     const value = {
         user,
         token,
@@ -78,7 +72,6 @@ export function AuthProvider({ children }) {
         login,
         signUp,
         logout,
-        handleOAuthSuccess,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

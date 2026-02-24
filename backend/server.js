@@ -408,7 +408,7 @@ app.post('/courses/:courseId/notes/:id/summarize', authenticateToken, async (req
       }
 
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           contents: [{
             parts: [{
@@ -462,38 +462,6 @@ app.use((req, res) => {
   sendError(res, 'Endpoint not found', 404);
 });
 
-// Function to find an available port
-function findAvailablePort(startPort) {
-  return new Promise((resolve, reject) => {
-    const net = require('net');
-    const server = net.createServer();
-
-    server.listen(startPort, () => {
-      const port = server.address().port;
-      server.close(() => resolve(port));
-    });
-
-    server.on('error', () => {
-      if (startPort < 3010) {
-        resolve(findAvailablePort(startPort + 1));
-      } else {
-        reject(new Error('No available ports found'));
-      }
-    });
-  });
-}
-
-// Start server with automatic port detection
-findAvailablePort(PORT)
-  .then(availablePort => {
-    app.listen(availablePort, () => {
-      console.log(`StudyBuddy API server running on port ${availablePort}`);
-      if (availablePort !== PORT) {
-        console.log(`(Port ${PORT} was busy, automatically using ${availablePort})`);
-      }
-    });
-  })
-  .catch(err => {
-    console.error('Failed to start server:', err.message);
-    process.exit(1);
-  });
+app.listen(PORT, () => {
+  console.log(`StudyBuddy API server running on port ${PORT}`);
+});

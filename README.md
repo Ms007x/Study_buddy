@@ -25,9 +25,10 @@ erDiagram
     USERS {
         integer id PK
         string email UK
-        string password_hash
+        string password
         string full_name
         datetime created_at
+        datetime updated_at
     }
     
     COURSES {
@@ -46,7 +47,7 @@ erDiagram
         integer id PK
         integer course_id FK
         string title
-        text content
+        text body
         text summary
         datetime created_at
         datetime updated_at
@@ -54,6 +55,37 @@ erDiagram
     
     USERS ||--o{ COURSES : owns
     COURSES ||--o{ NOTES : contains
+```
+
+### **Agent Flow Diagram (Track 1)**
+
+```mermaid
+flowchart TD
+  U[User Request] --> I[Intent Parse + Constraints]
+  I --> P{Need codebase context?}
+  P -- No --> D[Draft Answer / Plan]
+  P -- Yes --> T[Tool Trigger]
+
+  subgraph Tools
+    S1[Search (code_search/grep)]
+    S2[Read Files (read_file)]
+    S3[Edit Files (apply_patch/write_to_file)]
+    S4[Run/Check Commands (run_command/command_status)]
+  end
+
+  T --> S1 --> S2 --> E[Evidence Collected]
+  E --> D
+
+  D --> C{Confidence high?}
+  C -- No --> SC[Self-correction loop:
+  narrow search, validate assumptions,
+  re-read sources]
+  SC --> T
+  C -- Yes --> O[Implement / Respond]
+
+  O --> V{User feedback / errors?}
+  V -- Yes --> SC
+  V -- No --> Done[Done]
 ```
 
 ### **API Flow Architecture**
@@ -134,6 +166,67 @@ graph TD
 2. **Portability**: Single file database for easy deployment
 3. **Performance**: Excellent for small to medium applications
 4. **Reliability**: ACID compliant with full transaction support
+
+## 📚 **Prompt Library**
+
+This section documents the *project-facing* prompts and interaction patterns used to build/operate StudyBuddy tooling. Some internal “system” instructions from the runtime environment are not reproducible here; instead, this captures the reusable prompts you can keep in-repo.
+
+### **System Prompts (Project-Level)**
+
+- **Backend/API coding assistant**
+  - Goal: implement endpoints, fix bugs, and update DB logic with minimal, safe changes.
+  - Constraints: read code first, prefer small diffs, avoid breaking API contracts.
+
+- **Frontend coding assistant**
+  - Goal: implement UI features consuming the API with clear error states.
+  - Constraints: keep components modular, avoid introducing unnecessary dependencies.
+
+### **Tool Definitions (What each tool is for)**
+
+- **code_search / grep_search**
+  - Locate authoritative logic (route handlers, middleware, DB layer).
+- **read_file / list_dir**
+  - Confirm current behavior before changing anything.
+- **apply_patch / write_to_file**
+  - Implement minimal, reviewable changes (small hunks, targeted edits).
+- **run_command**
+  - Used only when needed to verify behavior (tests, lint, dev server).
+
+### **Few-Shot Examples (Copy/paste prompts)**
+
+```text
+Example 1: Add an endpoint
+"Add GET /health that returns { ok: true }. Use the same response format as other endpoints. Update Postman collection too."
+
+Example 2: Fix a bug with evidence
+"/courses/:id returns 500 sometimes. Find the root cause in the backend, explain it, and patch it. Don’t change unrelated files."
+
+Example 3: Documentation generation
+"Scan backend routes and generate a Postman Collection v2.1 JSON using {{baseUrl}} and {{authToken}} variables."
+```
+
+### **Why these instructions (temperature / style / safety)**
+
+- **Lower creativity for code edits**
+  - Code generation benefits from determinism: fewer “invented” APIs and more faithful edits.
+- **Evidence-first workflow**
+  - Reading/searching before writing reduces regressions and keeps changes aligned with the repo.
+- **Small diffs**
+  - Easier to review, less likely to introduce side effects.
+
+## 🧠 **Pattern Choice Explanation**
+
+### **Agent pattern: Plan-and-Execute vs ReAct**
+
+- **Plan-and-Execute** is used for multi-step tasks (e.g., “generate a Postman collection”, “update docs”, “refactor auth”). It keeps work chunked and trackable.
+- **ReAct-style loops** (observe → act → re-observe) are used when debugging or when requirements are ambiguous, because it supports quick self-correction based on new evidence.
+
+### **Backend pattern: Express Middleware**
+
+- Authentication/authorization is implemented as **middleware** (e.g., `authenticateToken`) because:
+  - It centralizes security checks.
+  - It reduces duplicated code across handlers.
+  - It makes it easy to apply rules per-route.
 
 ## 🚀 **Deployment & Development**
 

@@ -15,6 +15,36 @@
 			"key": "authToken",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "noteId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "provider",
+			"value": "google",
+			"type": "string"
+		},
+		{
+			"key": "oauthAccessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "oauthCode",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "oauthState",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"auth": {
@@ -140,7 +170,85 @@
 								"providers"
 							]
 						},
-						"description": "Get available OAuth providers (currently empty)."
+						"description": "Get available authentication providers (currently empty - OAuth removed)."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auth/:provider",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/{{provider}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"{{provider}}"
+							]
+						},
+						"description": "Initiate OAuth flow. This endpoint redirects to the provider's consent screen."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auth/:provider/callback",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/{{provider}}/callback?code={{oauthCode}}&state={{oauthState}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"{{provider}}",
+								"callback"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "{{oauthCode}}"
+								},
+								{
+									"key": "state",
+									"value": "{{oauthState}}"
+								}
+							]
+						},
+						"description": "OAuth callback endpoint. Typically called by the provider, not manually. Redirects to the frontend with a JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /auth/oauth/token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"provider\": \"{{provider}}\",\n  \"accessToken\": \"{{oauthAccessToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/oauth/token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"oauth",
+								"token"
+							]
+						},
+						"description": "Exchange an OAuth access token for a StudyBuddy JWT token (useful for SPA OAuth flows)."
 					},
 					"response": []
 				}
@@ -241,9 +349,94 @@
 						"description": "Delete course and all associated notes. Only course owner can delete. Requires authentication."
 					},
 					"response": []
+				},
+				{
+					"name": "POST /courses/:courseId/enroll",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}/enroll",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"{{courseId}}",
+								"enroll"
+							]
+						},
+						"description": "Enroll the current user in a course. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /courses/:courseId/enroll",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}/enroll",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"{{courseId}}",
+								"enroll"
+							]
+						},
+						"description": "Unenroll the current user from a course. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /courses/:courseId/enrollments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}/enrollments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"{{courseId}}",
+								"enrollments"
+							]
+						},
+						"description": "Get enrollments for a course. Requires authentication and instructor/owner permissions."
+					},
+					"response": []
 				}
 			],
 			"description": "CRUD operations for course management"
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "GET /user/dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/user/dashboard",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"dashboard"
+							]
+						},
+						"description": "Get the authenticated user's dashboard data (enrollments, progress, recent activity, owned courses, profile)."
+					},
+					"response": []
+				}
+			],
+			"description": "Authenticated user endpoints"
 		},
 		{
 			"name": "Notes Management",
@@ -254,13 +447,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes"
 							]
 						},
@@ -274,15 +467,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes/{{noteId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes",
-								"1"
+								"{{noteId}}"
 							]
 						},
 						"description": "Get single note by ID. Public endpoint."
@@ -304,13 +497,13 @@
 							"raw": "{\n  \"title\": \"Understanding React Hooks\",\n  \"content\": \"React Hooks revolutionized how we write React components. They allow you to use state and other React features without writing a class. The most commonly used hooks are useState and useEffect. useState lets you add state to functional components, while useEffect lets you perform side effects. Other important hooks include useContext, useReducer, and useMemo. Each hook serves a specific purpose and follows specific rules of hooks.\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes"
 							]
 						},
@@ -333,15 +526,15 @@
 							"raw": "{\n  \"title\": \"Updated: Understanding React Hooks\",\n  \"content\": \"React Hooks revolutionized how we write React components. They allow you to use state and other React features without writing a class. Updated content with more details about useState and useEffect hooks.\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes/{{noteId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes",
-								"1"
+								"{{noteId}}"
 							]
 						},
 						"description": "Update existing note. Requires authentication."
@@ -354,15 +547,15 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes/1",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes/{{noteId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes",
-								"1"
+								"{{noteId}}"
 							]
 						},
 						"description": "Delete a note. Requires authentication."
@@ -381,15 +574,15 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/courses/1/notes/1/summarize",
+							"raw": "{{baseUrl}}/courses/{{courseId}}/notes/{{noteId}}/summarize",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"courses",
-								"1",
+								"{{courseId}}",
 								"notes",
-								"1",
+								"{{noteId}}",
 								"summarize"
 							]
 						},

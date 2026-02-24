@@ -427,29 +427,6 @@ const CourseDetails = ({ course, onBack, onUpdateCourse }) => {
                                 </div>
                             ))}
                         </div>
-
-                        {/* AI Prompt Box */}
-                        <div className="detail-ai-summarizer">
-                            <h2 className="content-title">What do you want to study?</h2>
-                            <p className="content-subtitle">e.g., &apos;Summarize my {course.title} notes or quiz me.&apos;</p>
-                            <div className="input-container">
-                                <textarea className="study-input" placeholder={isAuthenticated ? 'Type your question here...' : 'Please sign in to use AI features'} rows={4} disabled={!isAuthenticated} />
-                            </div>
-                            <div className="ai-action-buttons">
-                                <button className="btn-generate" onClick={() => { if (!isAuthenticated) { alert('Please sign in to use AI features'); } }}>
-                                    <Sparkles size={16} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'text-bottom' }} />
-                                    Generate with AI
-                                </button>
-                            </div>
-                            <div className="context-tags-section">
-                                <span className="tags-label">Context Tags</span>
-                                <div className="tags-row">
-                                    <button className="tag-pill">Latest Notes</button>
-                                    <button className="tag-pill">All Notes</button>
-                                    <button className="tag-pill">External Web</button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

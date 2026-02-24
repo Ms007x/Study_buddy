@@ -5,37 +5,21 @@ import Hero from './components/Hero';
 import CourseSection from './components/CourseSection';
 import CourseDetails from './components/CourseDetails';
 import CreateCourse from './components/CreateCourse';
+import Auth from './components/Auth';
 import Profile from './components/Profile';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
-import Auth from './components/Auth';
 import { courses as coursesApi } from './services/api';
 import './App.css';
 
 // ─── Inner app that has access to AuthContext ─────────────────────────────────
 function AppInner() {
-  const { isAuthenticated, loading: authLoading, handleOAuthSuccess, logout } = useAuth();
+  const { isAuthenticated, loading: authLoading, logout } = useAuth();
 
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courses, setCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
-
-  // ── Handle OAuth redirect callback (/auth/success?token=...&user=...) ─────────
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const userRaw = params.get('user');
-    if (token && userRaw) {
-      try {
-        const user = JSON.parse(decodeURIComponent(userRaw));
-        handleOAuthSuccess(token, user);
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        setCurrentView('dashboard');
-      } catch (_) { /* ignore parse errors */ }
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Load courses from API (available to all users) ────────────────────────
   const fetchCourses = useCallback(async () => {

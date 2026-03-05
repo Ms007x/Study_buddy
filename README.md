@@ -279,10 +279,211 @@ VITE_API_URL=http://localhost:3000
 - **Load Balancing**: Stateless design ready for horizontal scaling
 - **Caching**: Redis integration ready for session and data caching
 
+## 📁 **Project Structure**
+
+```
+studybuddy/
+├── 📄 README.md                          # This file - project documentation
+├── 📄 package.json                       # Root package.json (frontend deps & scripts)
+├── 📄 vite.config.js                     # Vite configuration with proxy setup
+├── 📄 StudyBuddy-API-Postman-Collection.json  # Postman collection for API testing
+│
+├── 📁 scripts/
+│   └── 📄 start-dev.cjs                  # Development startup script (handles port conflicts)
+│
+├── 📁 src/                               # Frontend React source code
+│   ├── 📄 App.jsx                        # Main app component with routing
+│   ├── 📄 App.css                        # Main app styles
+│   ├── 📄 main.jsx                       # React entry point
+│   │
+│   ├── 📁 components/                    # Reusable React components
+│   │   ├── 📄 Auth.jsx                   # Login/Signup forms
+│   │   ├── 📄 CourseSection.jsx          # Course listing component
+│   │   ├── 📄 CourseDetails.jsx          # Course detail view
+│   │   ├── 📄 CreateCourse.jsx           # Course creation form
+│   │   ├── 📄 ContactSection.jsx         # Contact/Landing section
+│   │   ├── 📄 Footer.jsx                 # App footer
+│   │   ├── 📄 Hero.jsx                   # Landing hero section
+│   │   ├── 📄 Profile.jsx                # User profile page
+│   │   └── 📄 TopNav.jsx                 # Navigation bar
+│   │
+│   ├── 📁 context/
+│   │   └── 📄 AuthContext.jsx            # Authentication context provider
+│   │
+│   ├── 📁 services/
+│   │   └── 📄 api.js                     # API client functions
+│   │
+│   └── 📁 assets/                        # Static assets (images, icons)
+│
+└── 📁 backend/                           # Backend Node.js/Express API
+    ├── 📄 server.js                      # Main server entry (SQLite version)
+    ├── 📄 server-final.js                # Production server (PostgreSQL/Supabase)
+    ├── 📄 package.json                   # Backend dependencies
+    ├── 📄 database-sqlite.js             # SQLite database setup
+    ├── 📄 database.js                    # PostgreSQL database setup
+    ├── 📄 postgresql-schema.sql          # PostgreSQL schema
+    │
+    ├── 📁 config/
+    │   └── 📄 index.js                   # Configuration utilities
+    │
+    ├── 📁 utils/
+    │   └── 📄 ai-service.js              # AI summarization service
+    │
+    └── 📁 uploads/                       # File upload directory (created at runtime)
+```
+
+## 📚 **API Endpoints Reference**
+
+### **Authentication Endpoints**
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/auth/signup` | Register new user | No |
+| POST | `/auth/login` | User login | No |
+| GET | `/auth/me` | Get current user info | Yes |
+| POST | `/auth/logout` | Logout (client-side) | No |
+| GET | `/auth/providers` | List OAuth providers | No |
+
+### **Course Endpoints**
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/courses` | List all courses | No |
+| GET | `/courses/:id` | Get course details | No |
+| POST | `/courses` | Create new course | Yes |
+| PUT | `/courses/:id` | Update course | Yes (Owner) |
+| DELETE | `/courses/:id` | Delete course | Yes (Owner) |
+
+### **Enrollment Endpoints**
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/courses/:id/enroll` | Enroll in course | Yes |
+| DELETE | `/courses/:id/enroll` | Unenroll from course | Yes |
+| GET | `/courses/:id/enrollments` | List enrollments | Yes (Owner) |
+
+### **Notes Endpoints**
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/courses/:courseId/notes` | List course notes | Yes (Enrolled/Owner) |
+| GET | `/courses/:courseId/notes/:id` | Get note details | Yes (Enrolled/Owner) |
+| POST | `/courses/:courseId/notes` | Create note | Yes (Owner) |
+| PUT | `/courses/:courseId/notes/:id` | Update note | Yes (Owner) |
+| DELETE | `/courses/:courseId/notes/:id` | Delete note | Yes (Owner) |
+| POST | `/courses/:courseId/notes/:id/summarize` | AI summarize | Yes (Enrolled/Owner) |
+
+### **User Endpoints**
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/user/dashboard` | Get user dashboard | Yes |
+
 ---
 
-## 🤝 **Contributing**
+## 🔧 **Troubleshooting Guide**
 
-This project demonstrates modern full-stack development practices with clean architecture, comprehensive documentation, and scalable design patterns.
+### **Common Issues & Solutions**
 
-**Tech Stack**: React, Node.js, Express, SQLite, JWT, CSS3, HTML5
+#### 1. Port 3000 Already in Use
+**Error:** `EADDRINUSE: address already in use :::3000`
+
+**Solution:**
+```bash
+# Find the process using port 3000
+lsof -nP -iTCP:3000 | grep LISTEN
+
+# Kill the process (replace <PID> with the actual number)
+kill -9 <PID>
+
+# Or use the automated script
+npm start
+```
+
+#### 2. Frontend Can't Connect to Backend
+**Error:** API requests failing, CORS errors, or "Network Error"
+
+**Solution:**
+- Ensure backend is running on `http://localhost:3000`
+- Check `vite.config.js` proxy configuration
+- Verify `VITE_API_URL` environment variable
+
+#### 3. Auth Component Not Defined
+**Error:** `Uncaught ReferenceError: Auth is not defined`
+
+**Solution:** Ensure `Auth` component is imported in `App.jsx`:
+```javascript
+import Auth from './components/Auth';
+```
+
+#### 4. Database Connection Issues
+**Error:** "Failed to open database" or SQLite errors
+
+**Solution:**
+- Check write permissions in `backend/` directory
+- Ensure `studybuddy.db` file can be created/accessed
+- Run database initialization: `npm run init-db`
+
+#### 5. JWT Authentication Failing
+**Error:** "Invalid or expired token" or 401 errors
+
+**Solution:**
+- Check `JWT_SECRET` is set in backend `.env`
+- Clear browser localStorage and re-login
+- Verify token format in request headers: `Authorization: Bearer <token>`
+
+---
+
+## 🔐 **Environment Variables Reference**
+
+### **Backend Variables (`backend/.env`)**
+
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| `PORT` | `3000` | No | Server port |
+| `BASE_URL` | `http://localhost:3000` | No | Backend base URL |
+| `FRONTEND_URL` | `http://localhost:5175` | No | Frontend URL for CORS |
+| `JWT_SECRET` | - | **Yes** | Secret key for JWT tokens |
+| `DATABASE_URL` | - | For PostgreSQL | PostgreSQL connection string |
+| `GOOGLE_AI_API_KEY` | - | For AI | Google AI Studio API key |
+| `GOOGLE_CLIENT_ID` | - | For OAuth | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | - | For OAuth | Google OAuth client secret |
+
+### **Frontend Variables (`.env`)**
+
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| `VITE_API_URL` | `http://localhost:3000` | No | Backend API URL |
+
+---
+
+## 🧪 **Testing with Postman**
+
+### **Quick Start**
+
+1. **Import Collection:**
+   - Open Postman
+   - File → Import → Select `StudyBuddy-API-Postman-Collection.json`
+
+2. **Set Environment Variables:**
+   - Create environment with:
+     - `baseUrl`: `http://localhost:3000`
+     - `authToken`: (leave empty, will be filled after login)
+
+3. **Test Authentication:**
+   - Send `POST /auth/signup` to create user
+   - Send `POST /auth/login` to get token
+   - Copy token from response and set in `authToken` environment variable
+
+4. **Test Protected Endpoints:**
+   - All endpoints requiring auth will now use the token automatically
+
+### **Example Request Flow**
+
+```
+1. POST /auth/signup → Create account
+2. POST /auth/login → Get JWT token
+3. POST /courses → Create a course (with token)
+4. GET /courses → List courses
+5. POST /courses/:id/enroll → Enroll in course
+```
